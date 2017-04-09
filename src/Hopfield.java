@@ -21,6 +21,13 @@ public class Hopfield {
             try {
                 Integer choice = scan.nextInt();
 
+                if (choice == 1) {
+                    System.out.println("Please enter the name of your training sample file:  ");
+                    String trainFile = scan.next();
+                    List<Integer> trainIns = new Hopfield().readIns(trainFile);
+                    System.out.println(trainIns);
+                }
+
                 if (choice == 3) {
                     System.out.println("Goodbye!");
                     quit = true;
@@ -32,9 +39,50 @@ public class Hopfield {
             }
         }
         System.exit(1);
+    }
 
+    //Function to read testing file and store contents in int array
+    private List<Integer> readIns(String inFile) {
+        List<Integer> inVals = new ArrayList<Integer>();
 
-
-
+        try {
+            int count = 0;
+            BufferedReader br = new BufferedReader(new FileReader((inFile)));
+            String lines;
+            while((lines = br.readLine()) != null) {
+                //Reading and storing training inputs
+                if (count > 1) {
+                    //Check if line itself is new line
+                    if (lines.equals("")) {
+                        continue;
+                    }
+                    for (int i = 0; i < lines.length(); i++) {
+                        //Cycle through each character in line
+                        if (lines.charAt(i) == 'O' || lines.charAt(i) == '0') {
+                            inVals.add(1);
+                        }
+                        if (lines.charAt(i) == ' ') {
+                            inVals.add(-1);
+                        }
+                    }
+                }
+                else {
+                    //Reading first two lines so just store in array
+                    inVals.add(Integer.parseInt(lines));
+                }
+                count++; //increment count
+            }
+            br.close();
+            return inVals;
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("File inputted is invalid");
+            e.printStackTrace();
+            return null;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
