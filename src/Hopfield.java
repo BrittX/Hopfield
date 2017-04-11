@@ -1,10 +1,24 @@
 /**
- * Created by siber on 4/8/2017.
+ * Created by Brittany on 4/8/2017.
  */
 import java.io.*;
 import java.util.*;
 
 public class Hopfield {
+    //variables for Hopfield
+    //String fName;
+    int pairs;
+    int dimensions;
+    List<Integer> tSamples;
+
+    //Constructor
+    public Hopfield(String fName) {
+        List<Integer> trains = readIns(fName);
+        pairs = trains.get(0); //store first value as number of pairs
+        dimensions = trains.get(1); //second value as dimensions for each training pair
+        tSamples = trains.subList(2, trains.size()); //store the remainder which are our training samples
+    }
+
     public static void main(String[] args) {
         Scanner scan = new Scanner(System.in);
         boolean quit = false;
@@ -12,30 +26,33 @@ public class Hopfield {
 
         while(!quit) {
             //Menu
-            System.out.println("Please choose from one of the options below\n");
+            System.out.println("\nPlease choose from one of the options below\n");
             System.out.println("1. Train using a training image file");
             System.out.println("2. Test using a trained weight file");
             System.out.println("3. Exit\n");
 
             //get user input
             try {
+                System.out.print(">>> ");
                 Integer choice = scan.nextInt();
 
                 if (choice == 1) {
-                    System.out.println("Please enter the name of your training sample file:  ");
+                    System.out.println("\nPlease enter the name of your training sample file:  \n");
+                    System.out.print(">>> ");
                     String trainFile = scan.next();
-                    List<Integer> trainIns = new Hopfield().readIns(trainFile);
-                    System.out.println(trainIns);
+                    Hopfield hopfield = new Hopfield(trainFile);
+                    //System.out.println(trainIns);
                 }
 
                 if (choice == 3) {
-                    System.out.println("Goodbye!");
+                    System.out.println("Goodbye!\n");
                     quit = true;
                 }
             }
             catch (InputMismatchException e) {
                 System.out.println("Please enter an integer menu option");
                 e.printStackTrace();
+                break; //leave the loop for now
             }
         }
         System.exit(1);
