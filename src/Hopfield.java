@@ -9,30 +9,53 @@ public class Hopfield {
     //String fName;
     int pairs;
     int dimensions;
-    List<Integer> tSamples;
-    int cols, rows;
+    int[][][] samples;
 
     //Constructor
     public Hopfield(String fName) {
         try {
-            List<Integer> trains = readIns(fName);
-            dimensions = trains.get(0); //store first value as number of dimensions
-            pairs = trains.get(1); //second value as number of pairs
-//            cols = trains.get(2);
-//            rows = trains.get(3);
-//            tSamples = trains.subList(2, trains.size()); //store the remainder which are our training samples
+            List<Integer> dimpairs = readSome(fName);
+            dimensions = dimpairs.get(0); //store first value as number of dimensions
+            pairs = dimpairs.get(1); //second value as number of pairs
+            samples = readIns(fName, pairs);
+            //System.out.println(samples[3][1][1]);
         }
         catch (NullPointerException e) {
             System.out.println("\nYou entered an invalid file format");
-            e.printStackTrace();
+            //e.printStackTrace();
             System.exit(0);
         }
     }
+    /*
+    Function to read the first two values of the training sample
+    returns a list of integers with the first value being the # of dimensions
+        and the second being the number of pairs we'll see
+     */
+    private List<Integer> readSome(String inFile) {
+        List<Integer> inVals = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader((inFile)));
+            //get number of dimensions
+            inVals.add(Integer.parseInt(br.readLine()));
+            //get number of pairs
+            inVals.add(Integer.parseInt(br.readLine()));
+
+            return inVals;
+        }
+        catch (FileNotFoundException e) {
+            System.out.println("Please input an existing file");
+            e.printStackTrace();
+            return null;
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 
     //Function to read testing file and store contents in int array
-    private List<Integer> readIns(String inFile) {
-        List<Integer> inVals = new ArrayList<Integer>();
-
+    private int[][][] readIns(String inFile, int numPairs) {
         try {
             int count = 0, rows = 0, cols = 0, check = 0, curr = 0;
             BufferedReader br = new BufferedReader(new FileReader((inFile)));
@@ -51,16 +74,12 @@ public class Hopfield {
                     rows+=1; //increment number of rows
                     cols = lines.length(); //store number of columns in each training pair
                 }
-                else {
-                    //Reading first two lines so just store in array
-                    inVals.add(Integer.parseInt(lines));
-                }
                 count++; //increment count
             }
             br.close();
             BufferedReader brr = new BufferedReader(new FileReader(inFile));
             //now read and store in 2D matrix
-            int[][][] samples = new int[inVals.get(1)][rows][cols];
+            int[][][] samples = new int[numPairs][rows][cols];
             int index = 0;
             while((lines = brr.readLine()) != null) {
                 if (curr > 2) {
@@ -82,7 +101,7 @@ public class Hopfield {
                 curr++;
             }
             brr.close();
-            return inVals;
+            return samples;
         }
         catch (FileNotFoundException e) {
             System.out.println("\nFile inputted is invalid");
@@ -139,7 +158,7 @@ public class Hopfield {
                 Integer choice = scan.nextInt();
 
                 if (choice == 1) {
-                    System.out.println("\nPlease enter the name of your training sample file:  \n");
+                    System.out.println("\nPlease enter the name of your training sample file: ");
                     System.out.print(">>> ");
                     String trainFile = scan.next();
                     Hopfield hopfield = new Hopfield(trainFile);
