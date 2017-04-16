@@ -6,10 +6,10 @@ import java.util.*;
 
 public class Hopfield {
     //variables for Hopfield
-    //String fName;
-    int pairs;
-    int dimensions;
+    int pairs, dimensions, cols, rows;
+    //int dimensions;
     int[][][] samples;
+
 
     //Constructor
     public Hopfield(String fName) {
@@ -17,12 +17,12 @@ public class Hopfield {
             List<Integer> dimpairs = readSome(fName);
             dimensions = dimpairs.get(0); //store first value as number of dimensions
             pairs = dimpairs.get(1); //second value as number of pairs
-            samples = readIns(fName, pairs);
-            //System.out.println(samples[3][1][1]);
+            rows = dimpairs.get(2);
+            cols = dimpairs.get(3);
+            samples = readIns(fName, pairs, rows, cols);
         }
         catch (NullPointerException e) {
             System.out.println("\nYou entered an invalid file format");
-            //e.printStackTrace();
             System.exit(0);
         }
     }
@@ -39,7 +39,25 @@ public class Hopfield {
             inVals.add(Integer.parseInt(br.readLine()));
             //get number of pairs
             inVals.add(Integer.parseInt(br.readLine()));
-
+            int check = 0, rows = 0, cols = 0;
+            String lines;
+            while((lines = br.readLine()) != null) {
+                //Reading and storing training inputs
+                    //Check if line itself is new line
+                    if (lines.equals("")) {
+                        check += 1;
+                        if (check == 2) {
+                            break;
+                        }
+                        continue;
+                    }
+                    rows+=1; //increment number of rows
+                    cols = lines.length(); //store number of columns in each training pair
+                //count++; //increment count
+            }
+            br.close();
+            inVals.add(rows);
+            inVals.add(cols);
             return inVals;
         }
         catch (FileNotFoundException e) {
@@ -53,54 +71,38 @@ public class Hopfield {
         }
     }
 
-
     //Function to read testing file and store contents in int array
-    private int[][][] readIns(String inFile, int numPairs) {
+    private int[][][] readIns(String inFile, int numPairs, int numRows, int numCols) {
         try {
-            int count = 0, rows = 0, cols = 0, check = 0, curr = 0;
+            int curr = 0;
+            int j = 0;
             BufferedReader br = new BufferedReader(new FileReader((inFile)));
             String lines;
+            //now read and store in 2D matrix
+            int[][][] samples = new int[numPairs][numRows][numCols];
+            int index = 0;
             while((lines = br.readLine()) != null) {
-                //Reading and storing training inputs
-                if (count > 1) {
-                    //Check if line itself is new line
-                    if (lines.equals("")) {
-                        check += 1;
-                        if (check == 2) {
-                            break;
+                if (curr > 2) { //we're past the first 2 variables and the blank space
+                    if (lines.equals("")) { //check if we've reached the end of the pair
+                        index++; //increment which matrix we're storing
+                    }
+                    for (int k = 0; k < lines.length(); k++) {
+                        //Cycle through each character in line
+                        if (lines.charAt(k) == 'O' || lines.charAt(k) == '0') {
+                            samples[index][j][k] = 1;
+                        } else if (Character.isWhitespace(lines.charAt(k))) {
+                            samples[index][j][k] = -1;
                         }
+                    }
+                    if (j == numRows) { //check if we've finished the last row in the pair
+                        j = 0; //reset j and don't increment
                         continue;
                     }
-                    rows+=1; //increment number of rows
-                    cols = lines.length(); //store number of columns in each training pair
-                }
-                count++; //increment count
-            }
-            br.close();
-            BufferedReader brr = new BufferedReader(new FileReader(inFile));
-            //now read and store in 2D matrix
-            int[][][] samples = new int[numPairs][rows][cols];
-            int index = 0;
-            while((lines = brr.readLine()) != null) {
-                if (curr > 2) {
-                    if (lines.equals("")) {
-                        index++;
-                    }
-                        for (int j = 0; j < rows; j++) {
-                            for (int k = 0; k < lines.length(); k++) {
-                                //Cycle through each character in line
-                                if (lines.charAt(k) == 'O' || lines.charAt(k) == '0') {
-                                    samples[index][j][k] = 1;
-                                }
-                                else if (lines.charAt(k) == ' ') {
-                                    samples[index][j][k] = -1;
-                                }
-                            }
-                        }
+                    j++;
                 }
                 curr++;
             }
-            brr.close();
+            br.close();
             return samples;
         }
         catch (FileNotFoundException e) {
@@ -118,10 +120,24 @@ public class Hopfield {
             return null;
         }
     }
+    //Function to return a transposed matrix
+    private int[][][] transpose(int[][][] regular, int cols, int rows, int pairs) {
+        int[][][] transposed = new int[pairs][cols][rows];
+        for (int i = 0; i < pairs; i++) {
+            for (int j = 0; j < rows; j++) {
+                for (int k = 0; k < cols; k++) {
+                    transposed[i][j][k] = regular[i][k][j];
+                  //  System.out.print(transposed[i][k][j]+ "");
+                }
+                //System.out.println(" ");
+            }
+        }
+        return transposed;
+    }
     /*
     //Function to get weight matrix
-    public double[][] weightMatrix(List<Integer> samples) {
-        double [][]weightSamples = new double[this.pairs][this.dimensions];
+    public int[][] weightMatrix(int[][][] samples, int numPairs) {
+        int [][] weights; //for final weight matrix to return
         //System.out.println(weightSamples[i][j]);
         int j, r = 0;
 
@@ -136,7 +152,7 @@ public class Hopfield {
                 }
             }
         }
-        return weightSamples;
+        return weights;
     }
     */
 
@@ -161,8 +177,9 @@ public class Hopfield {
                     System.out.println("\nPlease enter the name of your training sample file: ");
                     System.out.print(">>> ");
                     String trainFile = scan.next();
-                    Hopfield hopfield = new Hopfield(trainFile);
-                    //hopfield.weightMatrix(hopfield.tSamples);
+                    Hopfield hopfield = new Hopfield(trainFile); //initialize Hopfield
+                    //hopfield.weightMatrix(hopfield.samples, hopfield.pairs);
+                    hopfield.transpose(hopfield.samples, hopfield.cols, hopfield.rows,hopfield.pairs);
                 }
                 if (choice == 3) {
                     System.out.println("Goodbye!\n");
