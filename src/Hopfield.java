@@ -53,7 +53,6 @@ public class Hopfield {
                     }
                     rows+=1; //increment number of rows
                     cols = lines.length(); //store number of columns in each training pair
-                //count++; //increment count
             }
             br.close();
             inVals.add(rows);
@@ -122,15 +121,21 @@ public class Hopfield {
     }
     //Function to return a transposed matrix
     private int[][][] transpose(int[][][] regular, int cols, int rows, int pairs) {
-        int[][][] transposed = new int[pairs][cols][rows];
-        for (int i = 0; i < pairs; i++) {
-            for (int j = 0; j < rows; j++) {
-                for (int k = 0; k < cols; k++) {
-                    transposed[i][j][k] = regular[i][k][j];
-                  //  System.out.print(transposed[i][k][j]+ "");
+        int[][][] transposed = new int[pairs][rows][cols];
+        int index = 0;
+        for (index = 0; index < pairs; index++) {
+            for (int j = 0; j < cols; j++) {
+                for (int k = 0; k < rows; k++) {
+                    System.out.println("Index: " + index + " j: " + j + " k: " + k);
+                    transposed[index][j][k] = regular[index][k][j];
                 }
-                //System.out.println(" ");
             }
+        }
+        for (int i = 0; i < rows; i++) {
+            for(int j = 0; j < cols; j++) {
+                System.out.print(transposed[4][i][j] + " ");
+            }
+            System.out.println();
         }
         return transposed;
     }
