@@ -3,6 +3,7 @@
  */
 import java.io.*;
 import java.util.*;
+import java.lang.*;
 
 public class Hopfield {
     //variables for Hopfield
@@ -102,6 +103,12 @@ public class Hopfield {
                 curr++;
             }
             br.close();
+            for (int i = 0; i < rows; i++) {
+                for (j = 0; j < cols; j++) {
+                    System.out.print(samples[4][i][j] + " ");
+                }
+                System.out.println();
+            }
             return samples;
         }
         catch (FileNotFoundException e) {
@@ -139,29 +146,41 @@ public class Hopfield {
         }
         return transposed;
     }
-    /*
-    //Function to get weight matrix
-    public int[][] weightMatrix(int[][][] samples, int numPairs) {
-        int [][] weights; //for final weight matrix to return
-        //System.out.println(weightSamples[i][j]);
-        int j, r = 0;
 
-        for(j = 0; j < samples.size(); j++) {
-            for (int i = 0; i < this.pairs; i++) { //for the weightSample[i][]
-                //System.out.println(j);
-                weightSamples[i][j] = samples.get(j);
-                //System.out.println(weightSamples[i][j]);
-                if (j == this.dimensions - 1) {
-                    System.out.println("we;re here");
-                    j+=1;
+
+    //Function to get multiplied matrices (s1 * s1T, ...)
+    public int[][][] weightMatrix(int[][][] samples, int numPairs, int[][][] transposed) throws IllegalAccessException {
+        //get transposed matrix
+        System.out.println(samples[0].length);
+        int[][][] weights = new int[numPairs][samples[0].length][transposed[0][0].length]; //for final weight matrix to return
+        int i, j, k;
+        //Make sure each sample row and transposed column of same length
+        for (int matrix = 0; matrix < numPairs; matrix++) {
+            if (samples[matrix].length != transposed[matrix][0].length) {
+                throw new IllegalAccessException("The number of rows from the original matrix" +
+                        "need to match the number of columns from the transposed matrix");
+            }
+            //assume both are equal
+            for (i = 0; i < samples[matrix].length; i++) { //cycle through rows of samples
+                for (j = 0; j < transposed[matrix][0].length; j++) {
+                    for (k = 0; k < samples[matrix][0].length; k++) {
+                        weights[matrix][i][j] += samples[matrix][i][k] * transposed[matrix][k][j];
+                    }
                 }
             }
         }
+        //Print out to make sure it's right
+        for (i = 0; i < rows; i++) {
+            for (j = 0; j < cols; j++) {
+                System.out.print(weights[4][i][j] + " ");
+            }
+            System.out.println();
+        }
         return weights;
     }
-    */
 
-    public static void main(String[] args) {
+
+    public static void main(String[] args) throws IllegalAccessException {
         Scanner scan = new Scanner(System.in);
         boolean quit = false;
         System.out.println("Welcome to my Discrete Hopfield Neural Network!");
@@ -184,7 +203,9 @@ public class Hopfield {
                     String trainFile = scan.next();
                     Hopfield hopfield = new Hopfield(trainFile); //initialize Hopfield
                     //hopfield.weightMatrix(hopfield.samples, hopfield.pairs);
-                    hopfield.transpose(hopfield.samples, hopfield.cols, hopfield.rows,hopfield.pairs);
+                    int[][][] transposed = hopfield.transpose(hopfield.samples, hopfield.cols, hopfield.rows,hopfield.pairs);
+                    //multiply matrices
+                    hopfield.weightMatrix(hopfield.samples, hopfield.pairs, transposed);
                 }
                 if (choice == 3) {
                     System.out.println("Goodbye!\n");
