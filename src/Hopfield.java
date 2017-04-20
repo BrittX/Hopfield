@@ -78,14 +78,15 @@ public class Hopfield {
             int j = 0;
             BufferedReader br = new BufferedReader(new FileReader((inFile)));
             String lines;
-            //now read and store in 2D matrix
+            //now read and store in 3D matrix
             int[][][] samples = new int[numPairs][numRows][numCols];
-            int index = 0;
+            int index = 0; //for which training pair we're on
             while((lines = br.readLine()) != null) {
                 if (curr > 2) { //we're past the first 2 variables and the blank space
                     if (lines.equals("")) { //check if we've reached the end of the pair
                         index++; //increment which matrix we're storing
                     }
+                    System.out.println("This is lines.length: " + lines.length());
                     for (int k = 0; k < lines.length(); k++) {
                         //Cycle through each character in line
                         if (lines.charAt(k) == 'O' || lines.charAt(k) == '0') {
@@ -98,17 +99,20 @@ public class Hopfield {
                         j = 0; //reset j and don't increment
                         continue;
                     }
-                    j++;
+                    else { //j < numrows
+                        j++;
+                    }
                 }
                 curr++;
             }
             br.close();
-            for (int i = 0; i < rows; i++) {
-                for (j = 0; j < cols; j++) {
-                    System.out.print(samples[4][i][j] + " ");
-                }
-                System.out.println();
-            }
+//            for (int i = 0; i < rows; i++) {
+//                for (j = 0; j < cols; j++) {
+//                    System.out.print(samples[0][i][j] + " ");
+//                }
+//                System.out.println();
+//            }
+//            System.out.println();
             return samples;
         }
         catch (FileNotFoundException e) {
@@ -133,14 +137,16 @@ public class Hopfield {
         for (index = 0; index < pairs; index++) {
             for (int j = 0; j < cols; j++) {
                 for (int k = 0; k < rows; k++) {
-                    System.out.println("Index: " + index + " j: " + j + " k: " + k);
+                    //System.out.println("Index: " + index + " j: " + j + " k: " + k);
                     transposed[index][j][k] = regular[index][k][j];
+                    //System.out.println(transposed[index][j][k]);
                 }
             }
         }
         for (int i = 0; i < rows; i++) {
             for(int j = 0; j < cols; j++) {
-                System.out.print(transposed[4][i][j] + " ");
+                //System.out.println();
+                System.out.print(regular[0][i][j] + " ");
             }
             System.out.println();
         }
@@ -148,8 +154,8 @@ public class Hopfield {
     }
 
 
-    //Function to get multiplied matrices (s1 * s1T, ...)
-    public int[][][] weightMatrix(int[][][] samples, int numPairs, int[][][] transposed) throws IllegalAccessException {
+    //Function to get multiplied matrices (s1 * s1T, ...) WORKS
+    public int[][][] multMatrix(int[][][] samples, int numPairs, int[][][] transposed) throws IllegalAccessException {
         //get transposed matrix
         System.out.println(samples[0].length);
         int[][][] weights = new int[numPairs][samples[0].length][transposed[0][0].length]; //for final weight matrix to return
@@ -172,12 +178,22 @@ public class Hopfield {
         //Print out to make sure it's right
         for (i = 0; i < rows; i++) {
             for (j = 0; j < cols; j++) {
-                System.out.print(weights[4][i][j] + " ");
+                System.out.print(weights[0][i][j] + " ");
             }
             System.out.println();
         }
         return weights;
     }
+
+//    //Function to add the matrices to get one 2D matrix
+//    public int[][] finalMatrix(int[][][] mult) {
+//        int[][] finalWeights = new int[rows][cols]; //to store final weight matrix
+//        int i, j, k;
+//
+//        for(int index = 0; index < pairs; index++) {
+//
+//        }
+//    }
 
 
     public static void main(String[] args) throws IllegalAccessException {
@@ -202,10 +218,11 @@ public class Hopfield {
                     System.out.print(">>> ");
                     String trainFile = scan.next();
                     Hopfield hopfield = new Hopfield(trainFile); //initialize Hopfield
-                    //hopfield.weightMatrix(hopfield.samples, hopfield.pairs);
-                    int[][][] transposed = hopfield.transpose(hopfield.samples, hopfield.cols, hopfield.rows,hopfield.pairs);
+                    //get transposed matrix
+                    //int[][][] transposed = hopfield.transpose(hopfield.samples, hopfield.cols, hopfield.rows,hopfield.pairs);
                     //multiply matrices
-                    hopfield.weightMatrix(hopfield.samples, hopfield.pairs, transposed);
+                    //hopfield.multMatrix(hopfield.samples, hopfield.pairs, transposed);
+                    //adding matrices to get one 2D matrix
                 }
                 if (choice == 3) {
                     System.out.println("Goodbye!\n");
