@@ -7,9 +7,9 @@ import java.lang.*;
 
 public class Hopfield {
     //variables for Hopfield
-    int pairs, dimensions, cols, rows;
+    private int pairs, dimensions, cols, rows;
     //int dimensions;
-    int[][][] samples;
+    private int[][][] samples;
 
 
     //Constructor
@@ -133,22 +133,13 @@ public class Hopfield {
     //Function to return a transposed matrix WORKS
     private int[][][] transpose(int[][][] regular, int cols, int rows, int pairs) {
         int[][][] transposed = new int[pairs][rows][cols];
-        int index = 0;
+        int index;
         for (index = 0; index < pairs; index++) {
             for (int j = 0; j < cols; j++) {
                 for (int k = 0; k < rows; k++) {
-                    //System.out.println("Index: " + index + " j: " + j + " k: " + k);
                     transposed[index][j][k] = regular[index][k][j];
-                    //System.out.println(transposed[index][j][k]);
                 }
             }
-        }
-        for (int i = 0; i < rows; i++) {
-            for(int j = 0; j < cols; j++) {
-                //System.out.println();
-                System.out.print(regular[0][i][j] + " ");
-            }
-            System.out.println();
         }
         return transposed;
     }
@@ -175,61 +166,26 @@ public class Hopfield {
                 }
             }
         }
-        //Print out to make sure it's right
-        for (i = 0; i < rows; i++) {
-            for (j = 0; j < cols; j++) {
-                System.out.print(weights[0][i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println("Bottom 1");
-        for (i = 0; i < rows; i++) {
-            for (j = 0; j < cols; j++) {
-                System.out.print(weights[1][i][j] + " ");
-            }
-            System.out.println();
-        }
         return weights;
     }
 
     //Function to add the matrices to get one 2D matrix WORKING
-    public int[][] finalMatrix(int[][][] mult, String outFile) {
+    private int[][] finalMatrix(int[][][] mult, String outFile) {
         int[][] finalWeights = new int[rows][cols]; //to store final weight matrix
         int i, j;
 
         for(int index = 0; index < pairs; index++) {
             for(i = 0; i < rows; i++) {
                 for(j = 0; j < cols; j++) {
-                    finalWeights[i][j] += mult[index][i][j];
-                    System.out.println("Final weights below");
-                    System.out.println(finalWeights[i][j]);
+                    if(i == j) { //No self connections
+                        finalWeights[i][j] = 0;
+                    }
+                    else
+                        finalWeights[i][j] += mult[index][i][j];
                 }
             }
         }
-        System.out.println("These are the final weights");
-        //Print out final weights (before changing diagonal)
-        for (i = 0; i < rows; i++) {
-            for (j = 0; j < cols; j++) {
-                System.out.print(finalWeights[i][j] + " ");
-            }
-            System.out.println();
-        }
-        System.out.println("These are the weights after diagonal");
-        //Change the diagonal (no self-connections)
-        for (i = 0; i < rows; i++) {
-            for (j = 0; j < cols; j++) {
-                if(i == j) {
-                    finalWeights[i][j] = 0;
-                }
-            }
-        }
-        for (i = 0; i < rows; i++) {
-            for (j = 0; j < cols; j++) {
-                System.out.print(finalWeights[i][j] + " ");
-            }
-            System.out.println();
-        }
-
+        //Write to output file
         try {
             PrintWriter w = new PrintWriter(outFile);
             for (i = 0; i < rows; i++) {
