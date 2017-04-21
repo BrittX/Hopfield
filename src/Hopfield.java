@@ -213,46 +213,40 @@ public class Hopfield {
     }
 
     //Redundant function to read testing inputs
-    private int[][][] readTests(String testFile) {
+    private int[][] readTests(String testFile) {
         try {
-            List<Integer> testVals = new ArrayList<>();
-            int curr = 0;
-            int j = 0;
-            int count = 0;
+            int index = 0;
+            int j;
+            int k = 0;
             BufferedReader br = new BufferedReader(new FileReader((testFile)));
             String lines;
-            //get number of dimensions
-            testVals.add(Integer.parseInt(br.readLine()));
-            //get number of testing pairs
-            testVals.add(Integer.parseInt(br.readLine()));
-            //now read and store in 3D matrix
-            int[][][] testins = new int[testVals.get(1)][][];
-            int index = 0; //for which training pair we're on
+            //get number of dimensions/pairs
+            int dim = Integer.parseInt(br.readLine());
+            int pair = Integer.parseInt(br.readLine());
+            int[][] testIns = new int[pair][dim];
+            br.readLine(); //to skip line in between numpairs and testing pairs
             while ((lines = br.readLine()) != null) {
-                if (curr > 2) {
-                    for (int k = 0; k < lines.length(); k++) {
-                        count++;
-                        System.out.println(count);
-                        //Cycle through each character in line
-                        if (lines.charAt(k) == 'O' || lines.charAt(k) == '0') {
-                            testins[index][j][k] = 1;
-                        } else if (Character.isWhitespace(lines.charAt(k))) {
-                            testins[index][j][k] = -1;
+                System.out.println(lines.length());
+                if (lines.length() > 0) { //non empty line
+                    for (j = 0; j < lines.length(); j++) { //to go through each line
+                        if (lines.charAt(j) == 'O' || lines.charAt(j) == '0') { //cycle each character in line
+                            testIns[index][k] = 1;
+                        } else if (Character.isWhitespace(lines.charAt(j))) {
+                            testIns[index][k] = -1;
                         }
-
-                    } if (j == lines.length()) {
-                        j = 0;
-                        continue;
+                        k++;
                     }
-                    else j++;
-                }
-                curr++;
-                if (count == testVals.get(0)) {
-                    index++;
+                } else { //at line break (so just finished reading training pair
+                    index++; //increment our index
+                    k = 0; //reset the number of dimensions in each pair
                 }
             }
+//            for (j = 0; j < 100; j++) {
+//                System.out.print(testIns[1][j] + " ");
+//            }
+//            System.out.println();
             br.close();
-            return testins;
+            return testIns;
         } catch (FileNotFoundException e) {
             System.out.println("File chosen does not exist");
             return null;
