@@ -27,6 +27,9 @@ public class Hopfield {
             System.exit(0);
         }
     }
+    public Hopfield(String fName, int option) {
+        readTests(fName);
+    }
     /*
     Function to read the first two values of the training sample
     returns a list of integers with the first value being the # of dimensions
@@ -203,7 +206,62 @@ public class Hopfield {
         }
         return finalWeights;
     }
+    //Function to return the activation y
+    private int activation(int y_in) {
+        //Checks if y_in is > 0, < 0 or == 0
+        return y_in >= 0 ? (y_in == 0 ? y_in: 1) : -1;
+    }
 
+    //Redundant function to read testing inputs
+    private int[][][] readTests(String testFile) {
+        try {
+            List<Integer> testVals = new ArrayList<>();
+            int curr = 0;
+            int j = 0;
+            int count = 0;
+            BufferedReader br = new BufferedReader(new FileReader((testFile)));
+            String lines;
+            //get number of dimensions
+            testVals.add(Integer.parseInt(br.readLine()));
+            //get number of testing pairs
+            testVals.add(Integer.parseInt(br.readLine()));
+            //now read and store in 3D matrix
+            int[][][] testins = new int[testVals.get(1)][][];
+            int index = 0; //for which training pair we're on
+            while ((lines = br.readLine()) != null) {
+                if (curr > 2) {
+                    for (int k = 0; k < lines.length(); k++) {
+                        count++;
+                        System.out.println(count);
+                        //Cycle through each character in line
+                        if (lines.charAt(k) == 'O' || lines.charAt(k) == '0') {
+                            testins[index][j][k] = 1;
+                        } else if (Character.isWhitespace(lines.charAt(k))) {
+                            testins[index][j][k] = -1;
+                        }
+
+                    } if (j == lines.length()) {
+                        j = 0;
+                        continue;
+                    }
+                    else j++;
+                }
+                curr++;
+                if (count == testVals.get(0)) {
+                    index++;
+                }
+            }
+            br.close();
+            return testins;
+        } catch (FileNotFoundException e) {
+            System.out.println("File chosen does not exist");
+            return null;
+        } catch (IOException e) {
+            System.out.println("Invalid file type");
+            e.printStackTrace();
+            return null;
+        }
+    }
 
     public static void main(String[] args) throws IllegalAccessException {
         Scanner scan = new Scanner(System.in);
@@ -221,13 +279,13 @@ public class Hopfield {
             try {
                 System.out.print(">>> ");
                 Integer choice = scan.nextInt();
-
+                //Training
                 if (choice == 1) {
                     System.out.println("\nPlease enter the name of your training sample file: ");
                     System.out.print(">>> ");
                     String inFile = scan.next();
                     System.out.println("\nPlease enter the filename to save trained weights: ");
-                    System.out.println(">>> ");
+                    System.out.print(">>> ");
                     String trainFile = scan.next();
                     Hopfield hopfield = new Hopfield(inFile); //initialize Hopfield
                     //get transposed matrix
@@ -235,7 +293,21 @@ public class Hopfield {
                     //multiply matrices
                     int[][][] multMatrix = hopfield.multMatrix(hopfield.samples, hopfield.pairs, transposed);
                     //adding matrices to get one 2D matrix
-                    int[][] finalMatrix = hopfield.finalMatrix(multMatrix, trainFile);
+                    hopfield.finalMatrix(multMatrix, trainFile);
+                }
+                //Testing
+                if (choice == 2) {
+                    System.out.println("\nPlease enter a testing sample file: ");
+                    System.out.print(">>> ");
+                    String testIns = scan.next();
+                    System.out.println("\nPlease enter the name of a saved weights file to use: ");
+                    System.out.print(">>> ");
+                    String trained = scan.next();
+                    System.out.println("\nEnter the max number of training epochs: ");
+                    int epochs = scan.nextInt();
+                    Hopfield testHop = new Hopfield(testIns, 2);
+                    //testHop.readTests(testIns);
+
                 }
                 if (choice == 3) {
                     System.out.println("Goodbye!\n");
